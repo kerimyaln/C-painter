@@ -1,0 +1,274 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace paint{
+   
+    public partial class Form1 : Form{
+       
+        public static bool kayıt = false;
+      
+        public Form1(){
+            InitializeComponent();
+            pictureBox1.Size = new Size(ClientSize.Width - 167, ClientSize.Height);
+         }
+
+        Pen klm = new Pen(Color.Blue, 1);
+        Graphics grf, grf2;
+        bool ciz, farklılık = false,sil=false;
+        int x, y,silgi=0,kalınlık;
+        Image ekran;
+        Pen slg = new Pen(Color.White,5);
+  
+      
+        private void Form1_Load(object sender, EventArgs e){
+     
+            linkLabel1.LinkBehavior = LinkBehavior.HoverUnderline;
+            linkLabel2.LinkBehavior = LinkBehavior.HoverUnderline;
+            linkLabel3.LinkBehavior = LinkBehavior.HoverUnderline;
+            grf = pictureBox1.CreateGraphics();
+            grf2 = pictureBox2.CreateGraphics();
+            numericUpDown1_Click(sender, e);
+            grf2.DrawLine(klm, 0, 18, 82, 18);
+            label3.Text = "Kalem kalınlık";
+        }
+
+        private Image goruntuAl(){
+          
+            Bitmap Goruntu = new Bitmap(pictureBox1.Width,pictureBox1.Height);//çekilecek fotonun genişliği
+            Graphics GFX = Graphics.FromImage(Goruntu);
+                      Size nokta = pictureBox1.Size;
+            GFX.CopyFromScreen(Location.X+174, Location.Y+30, 0, 0, nokta);
+            ekran = Goruntu;
+            return Goruntu;
+                 }
+        
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e){
+            if (ciz && !sil){
+                farklılık = true;
+                grf.DrawLine(klm, x, y, e.X, e.Y);
+                goruntuAl();
+            }
+            if(sil&&ciz){
+                
+                grf.DrawRectangle(slg,e.X,e.Y,5,5);
+                goruntuAl();
+               
+            }
+            
+            x = e.X;
+            y = e.Y;   
+            
+ 
+        }
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e){
+            
+            DialogResult mesaj = MessageBox.Show("Dikkat\n\nArka plan rengini değiştirmeniz\n" +
+                "çizdiğiniz şekilleri geri plana almanıza yol açar!!!\nDevam etmek istiyor musunuz?",
+                "Uyarı", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            if (mesaj == DialogResult.OK)            {
+                ColorDialog MyDialog = new ColorDialog();
+
+                if (MyDialog.ShowDialog() == DialogResult.OK){
+                    pictureBox1.BackColor = MyDialog.Color;
+                    goruntuAl();             
+                }
+                MyDialog.Dispose();
+            }
+
+        }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e){
+           
+            ColorDialog dialog = new ColorDialog();
+            if (dialog.ShowDialog() == DialogResult.OK){
+                klm.Color = dialog.Color;
+            }
+            numericUpDown1_Click(sender, e);
+            dialog.Dispose();
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e){
+            if (e.Button == MouseButtons.Left) 
+                ciz = true;
+           
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e){
+            if (e.Button == MouseButtons.Left) ciz = false;
+           
+        }
+
+        private void pictureBox1_DoubleClick(object sender, EventArgs e){
+            pictureBox1.Refresh();
+            goruntuAl();
+        }
+
+        private void dahaFazlaResimİçinToolStripMenuItem_Click(object sender, EventArgs e){
+            System.Diagnostics.Process.Start("www.google.com.tr/search?q=resimler"+
+               "&espv=2&biw=1242&bih=606&tbm=isch&tbo=u&source=univ&sa=X&ei=C9RCVY0TxsLu"+
+               "BqicgegO&ved=0CBoQsAQ#tbm=isch&q=g%C3%BCzel+manzara+resimler&revid=1748209789");
+        }
+
+        private void yeniPaintAçToolStripMenuItem_Click(object sender, EventArgs e){
+            System.Diagnostics.Process.Start("görselÖdev1.exe");
+        }
+
+        private void temizleToolStripMenuItem_Click(object sender, EventArgs e){
+            pictureBox1.Refresh();
+            pictureBox1.Image = null;
+            pictureBox1.BackColor = Color.White;
+            farklılık =false;
+        }
+
+        private void farklıKaydetToolStripMenuItem_Click(object sender, EventArgs e){
+            kayıt = false;
+            farklılık = false;
+            
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = ("Jpeg Resim Dosyası (*.jpg)|*.jpg|Gif Resim Dosyası (*.gif)|*.gif|Bmp Resim Dosyası(*.bmp)|*.bmp|Tüm Dosyalar(*.*)|*.*");
+            sfd.Title = "Kayıt";
+         
+            if (sfd.ShowDialog() == DialogResult.OK)            {
+                try{                  
+                  ekran.Save(sfd.FileName+".bmp");
+                }
+                catch (Exception){
+                    MessageBox.Show("Kaydedilemedi!");
+                    kayıt = true;
+                }
+            }
+            else
+                kayıt = true;
+                      
+        }
+        private void resimAçToolStripMenuItem_Click(object sender, EventArgs e){
+            Bitmap bmp; 
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Resim aç";
+            ofd.Filter = ("Jpeg Resim Dosyası (*.jpg)|*.jpg|Gif Resim Dosyası (*.gif)|*.gif|Bmp Resim Dosyası(*.bmp)|*.bmp|Tüm Dosyalar(*.*)|*.*");
+            if (ofd.ShowDialog() == DialogResult.OK){
+                farklılık = true;
+                bmp = new Bitmap(ofd.FileName);
+                pictureBox1.BackgroundImage = bmp;
+                goruntuAl();
+                }
+        }
+
+        private void labelrenkler_Click(object sender, EventArgs e){
+         
+            switch (((Label)sender).Name) {
+                case "label1": klm.Color = Color.Red; break;
+                case "label2": klm.Color = Color.FromArgb(0,192,0); break;
+                case "label4": klm.Color = Color.Purple; break;
+                case "label5": klm.Color = Color.Gray; break;
+                case "label6": klm.Color = Color.Blue; break;
+                case "label7": klm.Color = Color.FromArgb(255,192,128); break;
+                case "label8": klm.Color = Color.Black; break;
+                case "label9": klm.Color = Color.FromArgb(0,64,0); break;
+                case "label10": klm.Color = Color.Aqua; break;
+                case "label11": klm.Color = Color.Maroon; break;
+                case "label12": klm.Color = Color.FromArgb(192,64,0); break;
+                default: klm.Color = Color.Yellow; break;
+
+            } numericUpDown1_Click(sender, e);
+  }
+
+        private void numericUpDown1_Click(object sender, EventArgs e){
+         pictureBox2.Refresh();
+         if (klm.Color != Color.LightCyan)
+             pictureBox2.BackColor = Color.LightCyan;
+         else
+             pictureBox2.BackColor = Color.Pink;
+            klm.Width = (int)numericUpDown1.Value;
+            grf2.DrawLine(klm, 0, 18, 82, 18);
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e){
+                if (farklılık) {
+                    goruntuAl();
+                DialogResult mesaj = MessageBox.Show("Bu resimde değişiklikler yapıldı\n"+
+   "Değişiklikler kayıt edilsin mi?","Uyarı",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Warning);
+                if (mesaj == DialogResult.Yes){
+                    farklıKaydetToolStripMenuItem_Click(sender, e);
+                    if(kayıt)
+                    e.Cancel = true;
+                    else
+                    e.Cancel = false;
+                }
+                if (mesaj == DialogResult.Cancel)
+                    e.Cancel = true;
+                if (mesaj == DialogResult.No)
+                    e.Cancel = false;
+
+            }
+        }
+        private void Form1_Click(object sender, EventArgs e){
+          
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e){
+            pictureBox1.Size = new Size(ClientSize.Width - 167, ClientSize.Height);
+            grf = pictureBox1.CreateGraphics();
+         
+       
+        }
+
+        private void çıkışToolStripMenuItem_Click(object sender, EventArgs e){
+            bool çıkış = false;
+            if (farklılık){
+                goruntuAl();
+                DialogResult mesaj = MessageBox.Show("Bu resimde değişiklikler yapıldı\n" +
+   "Değişiklikler kayıt edilsin mi?", "Uyarı", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (mesaj == DialogResult.Yes){
+                    farklıKaydetToolStripMenuItem_Click(sender, e);
+                    if (kayıt)
+                        çıkış = false;
+    
+                    else
+                        çıkış = true;
+                    
+                }
+                if (mesaj == DialogResult.Cancel)
+                    çıkış = false;
+               
+                if (mesaj == DialogResult.No)
+                    çıkış = true;
+               
+
+            }
+            else {
+                Hide();
+                Dispose();
+            }
+            if (çıkış) {
+                Hide();
+                Dispose();
+            }
+        }
+
+        private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e){
+
+            if (silgi % 2 == 0)
+            {
+                linkLabel3.LinkColor = Color.Red;
+                linkLabel3.Text = "Silgi kapat";
+                sil = true;
+
+            }
+            else
+            {
+                linkLabel3.LinkColor = Color.FromArgb(0,192,0);
+                linkLabel3.Text = "Silgi aç";
+                sil = false;
+
+            } silgi++;
+        }    
+ }
+}
